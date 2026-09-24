@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ppocr-rec"
+version = "0.1.0"
+description = "PyTorch text recognition from PaddleOCR recipes (train/val/predict/export)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.0",
+    "torchvision",
+    "numpy",
+    "opencv-python",
+    "pyyaml",
+    "pillow",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+export = ["onnx", "onnxruntime", "onnxsim"]
+dev = ["pytest"]
+
+[project.scripts]
+ppocr-rec = "ppocr_rec.cfg:entrypoint"
+
+[tool.setuptools.packages.find]
+include = ["ppocr_rec*"]
+
+[tool.setuptools.package-data]
+ppocr_rec = ["cfg/**/*.yaml", "cfg/**/*.yml", "cfg/dicts/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,25 @@
+# PP-OCRv2 mobile: MobileNetV1Enhance + BiLSTM + CTC
+
+algorithm: CRNN
+imgsz: [32, 320]
+loss: CTCLoss
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: MobileNetV1Enhance
+    scale: 0.5
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 64
+  Head:
+    name: CTCHead
+    mid_channels: 96
+    fc_decay: 0.00002
+
+aug:
+  type: rec
+  con_aug: false

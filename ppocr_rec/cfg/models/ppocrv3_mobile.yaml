@@ -1,0 +1,31 @@
+# PP-OCRv3 mobile: MobileNetV1Enhance + MultiHead (CTC + SAR)
+
+algorithm: SVTR_LCNet
+imgsz: [48, 320]
+loss: MultiLoss
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR_LCNet
+  Transform:
+  Backbone:
+    name: MobileNetV1Enhance
+    scale: 0.5
+    last_conv_stride: [1, 2]
+    last_pool_type: avg
+    last_pool_kernel_size: [2, 2]
+  Head:
+    name: MultiHead
+    head_list:
+      - CTCHead:
+          Neck:
+            name: svtr
+            dims: 64
+            depth: 2
+            hidden_dims: 120
+            use_guide: true
+          Head:
+            fc_decay: 0.00001
+      - SARHead:
+          enc_dim: 512
+          max_text_length: 25

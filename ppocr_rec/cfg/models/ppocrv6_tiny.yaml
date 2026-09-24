@@ -1,0 +1,26 @@
+# PP-OCRv6 tiny: PPLCNetV4 + reshape CTC + NRTR
+
+algorithm: SVTR_LCNet
+imgsz: [48, 320]
+loss: MultiLoss
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR_LCNet
+  Transform:
+  Backbone:
+    name: PPLCNetV4
+    model_size: tiny
+  Head:
+    name: MultiHead
+    head_list:
+      - CTCHead:
+          Neck:
+            name: reshape
+          Head:
+            mid_channels: 80
+            use_guide: true
+            fc_decay: 0.00001
+      - NRTRHead:
+          nrtr_dim: 384
+          max_text_length: 25

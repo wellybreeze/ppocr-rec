@@ -1,0 +1,34 @@
+# Chinese SVTR (rec_svtrnet_ch): 32x320, RecConAug + RecAug, no STN
+
+algorithm: SVTR
+imgsz: [32, 320]
+loss: CTCLoss
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR
+  Transform:
+  Backbone:
+    name: SVTRNet
+    img_size: [32, 320]
+    out_char_num: 40
+    out_channels: 96
+    patch_merging: Conv
+    embed_dim: [64, 128, 256]
+    depth: [3, 6, 3]
+    num_heads: [2, 4, 8]
+    mixer: ["Local", "Local", "Local", "Local", "Local", "Local", "Global", "Global", "Global", "Global", "Global", "Global"]
+    local_mixer: [[7, 11], [7, 11], [7, 11]]
+    last_stage: true
+    prenorm: false
+  Neck:
+    name: SequenceEncoder
+    encoder_type: reshape
+  Head:
+    name: CTCHead
+
+aug:
+  type: rec
+  con_aug: true
+  con_aug_num: 2
+  padding: true

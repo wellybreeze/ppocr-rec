@@ -1,0 +1,28 @@
+# PP-OCRv4 server: PPHGNet_small + MultiHead (CTC + NRTR)
+
+algorithm: SVTR_HGNet
+imgsz: [48, 320]
+loss: MultiLoss
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR_HGNet
+  Transform:
+  Backbone:
+    name: PPHGNet_small
+  Head:
+    name: MultiHead
+    head_list:
+      - CTCHead:
+          Neck:
+            name: svtr
+            dims: 120
+            depth: 2
+            hidden_dims: 120
+            kernel_size: [1, 3]
+            use_guide: true
+          Head:
+            fc_decay: 0.00001
+      - NRTRHead:
+          nrtr_dim: 384
+          max_text_length: 25

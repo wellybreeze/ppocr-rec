@@ -1,0 +1,28 @@
+# PP-OCRv6 small: PPLCNetV4 + LightSVTR CTC + NRTR
+
+algorithm: SVTR_LCNet
+imgsz: [48, 320]
+loss: MultiLoss
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR_LCNet
+  Transform:
+  Backbone:
+    name: PPLCNetV4
+    model_size: small
+  Head:
+    name: MultiHead
+    head_list:
+      - CTCHead:
+          Neck:
+            name: lightsvtr
+            dims: 120
+            depth: 2
+            mlp_ratio: 2.0
+            local_kernel: 7
+          Head:
+            fc_decay: 0.00001
+      - NRTRHead:
+          nrtr_dim: 384
+          max_text_length: 25

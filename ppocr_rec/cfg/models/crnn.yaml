@@ -1,0 +1,21 @@
+# CRNN: MobileNetV3 + BiLSTM + CTC  (PaddleOCR rec_mv3_none_bilstm_ctc)
+
+algorithm: CRNN
+imgsz: [32, 100]
+loss: CTCLoss
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: MobileNetV3
+    scale: 0.5
+    model_name: large
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 96
+  Head:
+    name: CTCHead
+    fc_decay: 0

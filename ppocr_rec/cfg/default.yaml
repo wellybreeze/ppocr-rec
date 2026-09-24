@@ -1,0 +1,85 @@
+# 全局默认超参。合并顺序：本文件 ⊂ 传入 cfg ⊂ CLI/Python 覆盖（右侧优先）。
+
+# --- 入口 ---
+task: rec                 # 任务类型，目前仅 rec
+mode: train               # 运行模式：train / val / predict / export
+
+# --- 训练 ---
+model:                    # 结构 yaml 或权重 .pt；CLI 的 model= 会覆盖
+data:                     # 数据集 yaml（path / train / val / dict）
+epochs: 100               # 训练轮数
+patience: 50              # 验证 acc 连续 N 个 epoch 不提升则早停；0 关闭
+batch: 64                 # 批大小
+imgsz: [48, 320]          # 输入 [高, 宽]；训练时会写入 img_h / img_w
+save: true                # 是否写 last.pt / best.pt
+save_period: -1           # >0 时每 N 个 epoch 另存 weights/epochN.pt；-1 关闭
+device:                   # 空=自动；如 0 / cuda:0 / cpu
+workers: 4                # DataLoader 进程数；卡住时可改 0
+project: runs/rec         # 实验根目录
+name: exp                 # 本次实验名，实际目录为 project/name（重名变 exp2…）
+exist_ok: false           # false 时同名目录会自动加后缀；true 允许覆盖
+pretrained:               # 预训练 .pt；分类层宽度与字典不一致时会跳过该层
+optimizer: Adam           # Adam / AdamW / SGD
+verbose: true             # 是否显示训练进度条
+seed: 0                   # 随机种子（含 fraction 抽样）
+resume: false             # false | true（找 project/name/weights/last.pt）| last.pt 路径 | 实验目录
+amp: true                 # CUDA 混合精度；CPU 上不会启用
+fraction: 1.0             # 训练集抽样比例，(0, 1) 时生效；验证集仍用全量
+lr0: 0.0005               # 初始学习率
+lrf: 0.0                  # 最终学习率 = lr0 * lrf（余弦退火末尾）
+momentum: 0.937           # 仅 SGD 使用
+weight_decay: 0.00003     # 权重衰减
+warmup_epochs: 5          # 前几轮线性升温
+cos_lr: true              # 是否余弦退火
+val: true                 # 每个 epoch 后跑验证（早停依赖此项）
+plots: false              # 未使用（占位）
+
+# --- 识别 ---
+max_text_length: 25       # CTC 标签最大字符数，超长样本编码为空
+use_space_char: true      # 字典是否包含空格
+character_dict:           # 覆盖数据集 yaml 的 dict；一般不用填
+img_h: 48                 # 默认高；有 imgsz 时被覆盖
+img_w: 320                # 默认宽；有 imgsz 时被覆盖
+delimiter: "\t"           # 标注分隔符（路径<TAB>文本）
+
+# --- 训练增强（概率默认对齐 Paddle RecAug / RecConAug / SVTRRecAug）---
+# con_aug / con_aug_num / multi_scale 留空则跟模型 yaml 的 aug: 配方走
+rec_aug: true             # false 关闭 RecAug / SVTRRecAug（不影响 con_aug）
+tia_prob: 0.4             # TIA：扭曲 + 拉伸 + 透视（需高宽均 ≥20）
+crop_prob: 0.4            # 上下随机轻裁（需高宽均 ≥20）
+reverse_prob: 0.4         # 反色（255-x）
+noise_prob: 0.4           # 高斯噪声
+jitter_prob: 0.4          # 像素平移 jitter
+blur_prob: 0.4            # 高斯模糊
+hsv_aug_prob: 0.4         # Paddle RecAug 的微弱 V 通道抖动
+gray_prob: 0.0            # 灰度后再变回 3 通道；Paddle 无此项，0=关闭
+bgr2rgb_prob: 0.0         # 随机 BGR↔RGB；Paddle 无此项，0=关闭
+con_aug:                  # 词图水平拼接；空=跟配方（MultiHead 默认开）
+con_aug_num:              # 拼接时额外抽几张；空=跟配方（一般为 2）
+con_aug_prob: 0.5         # RecConAug 拼接概率
+multi_scale:              # 多尺度 [[宽,高],…]；空=跟配方（v4–v6 为 32/48/64 高）
+geometry_p: 0.5           # 仅 SVTRRecAug：几何变换概率
+deterioration_p: 0.25     # 仅 SVTRRecAug：退化（噪声/运动模糊/降采样）
+colorjitter_p: 0.25       # 仅 SVTRRecAug：亮度/对比度/饱和度/色相
+
+# --- 验证 / 预测 / 导出 ---
+split: val                # val 模式读取数据集 yaml 的哪个字段（val / train）
+source:                   # predict 输入：图片路径或文件夹
+save_txt: false           # predict 是否把结果写成 txt
+conf:                     # 未使用（占位）
+format: torchscript       # 导出格式：torchscript 或 onnx
+dynamic: true             # ONNX 动态 batch 与宽度（高度固定）
+simplify: false           # 导出后用 onnxsim 简化图；未安装则跳过
+opset: 17                 # ONNX opset
+normalize: true           # ONNX 图内 (x-mean)/std；推理输入只需 /255
+postprocess: true         # ONNX 内嵌 CTC greedy，输出 text_ids / text_confs
+mean: [0.5, 0.5, 0.5]     # 图内归一化均值，需与训练预处理一致
+std: [0.5, 0.5, 0.5]      # 图内归一化方差
+ignored_tokens: [0]       # CTC 后处理忽略的 id（0=blank）
+remove_duplicate: true    # CTC 去掉连续重复字符
+test_image:               # 导出后用该图跑一次预测并打印结果
+output:                   # 导出文件完整路径；不填则写到 project/name/
+keras: false              # 未使用（占位）
+optimize: false           # 未使用（占位）
+int8: false               # 未使用（占位）
+nms: false                # 未使用（占位）

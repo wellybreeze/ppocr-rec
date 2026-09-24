@@ -1,0 +1,21 @@
+# 数据集配置示例（识别）
+# 把本文件复制到你的数据目录旁，改 path / 列表文件名 / 字典即可。
+
+# 图片根目录。相对路径相对于「本 yaml 所在目录」；也可写绝对路径。
+# 标注文件里的图片路径都相对于这里。
+path: ./train_data
+
+# 训练集 / 验证集标注文件（相对 path）
+train: train_list.txt
+val: val_list.txt
+
+# 字符字典：
+# - 包内自带：ppocr_keys_v1.txt / ppocrv5_dict.txt / ppocrv6_dict.txt / ppocrv6_tiny_dict.txt
+# - 或自定义文件（每行一个字符，UTF-8）
+dict: ppocrv5_dict.txt
+
+# 标注分隔符：默认 TAB。一行格式为  相对路径<TAB>文本
+delimiter: "\t"
+
+# 是否把空格加入字典（英文/混排建议 true）
+use_space_char: true
